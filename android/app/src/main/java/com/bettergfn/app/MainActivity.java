@@ -31,7 +31,18 @@ public class MainActivity extends AppCompatActivity {
         // Improve performance and gaming experience
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage consoleMessage) {
+                if (consoleMessage.messageLevel() == android.webkit.ConsoleMessage.MessageLevel.ERROR) {
+                    final String msg = "JS Error: " + consoleMessage.message();
+                    runOnUiThread(() -> {
+                        android.widget.Toast.makeText(MainActivity.this, msg, android.widget.Toast.LENGTH_LONG).show();
+                    });
+                }
+                return super.onConsoleMessage(consoleMessage);
+            }
+        });
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -47,10 +58,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("https://play.geforcenow.com/");
     }
 
-    private boolean scriptInjected = false;
-
     private void injectScript() {
-        if (scriptInjected) return;
         try {
             InputStream is = getAssets().open("better-gfn.js");
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(is));
@@ -62,13 +70,18 @@ public class MainActivity extends AppCompatActivity {
             is.close();
             
             String js = sb.toString();
-            String safeJs = "(function() { if (!window.__bgfn_injected) { window.__bgfn_injected = true; \n" + js + "\n } })();";
+            String safeJs = "(function() { try { if (!window.__bgfn_injected) { window.__bgfn_injected = true; \n" + js + "\n } } catch(e) { console.error('BetterGFN Exception: ' + e); } })();";
             
             webView.post(() -> {
-                webView.evaluateJavascript(safeJs, null);
+                webView.evaluateJavascript(safeJs, value -> {
+                    android.widget.Toast.makeText(MainActivity.this, "Script Injection Sent!", android.widget.Toast.LENGTH_SHORT).show();
+                });
             });
-            scriptInjected = true;
         } catch (Exception e) {
+            final String err = e.getMessage();
+            runOnUiThread(() -> {
+                android.widget.Toast.makeText(MainActivity.this, "Asset Error: " + err, android.widget.Toast.LENGTH_LONG).show();
+            });
             e.printStackTrace();
         }
     }
