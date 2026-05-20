@@ -381,6 +381,7 @@
     // 8. UI OVERLAY  (Gyropad-style createElement architecture)
     // ─────────────────────────────────────────────
     function createUI() {
+        console.error('BetterGFN: createUI() executing');
         const containerStyles = {
             position: 'fixed',
             top: '10px',
@@ -614,18 +615,19 @@
         toggleButton.textContent = '⚙️';
         Object.assign(toggleButton.style, {
             position: 'fixed',
-            top: '10%',
-            right: '0vw',
-            fontSize: '4vh',
+            top: '20%',
+            right: '20px',
+            fontSize: '24px',
             textAlign: 'center',
-            background: '#1e1e1e',
+            background: 'rgba(30, 30, 30, 0.8)',
             color: 'white',
-            border: '2px solid #555',
+            border: '2px solid #fff',
             borderRadius: '50%',
-            width: '7vh',
-            height: '7vh',
+            width: '50px',
+            height: '50px',
             zIndex: '2147483647',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.5)'
         });
 
         // Draggable + tap-to-toggle (Gyropad pattern)
