@@ -1,0 +1,9 @@
+{
+  "appId": "com.bettergfn.app",
+  "appName": "Better GFN",
+  "webDir": "www",
+  "server": {
+    "url": "https://play.geforcenow.com",
+    "cleartext": true
+  }
+}
