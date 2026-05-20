@@ -47,17 +47,31 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("https://play.geforcenow.com/");
     }
 
+    private boolean scriptInjected = false;
+
     private void injectScript() {
+        if (scriptInjected) return;
         try {
             InputStream is = getAssets().open("better-gfn.js");
-            Scanner scanner = new Scanner(is).useDelimiter("\\A");
-            String js = scanner.hasNext() ? scanner.next() : "";
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
             is.close();
             
-            // Wrap the script in an IIFE and execute it
-            webView.evaluateJavascript("(function() { " + js + " })();", null);
+            String js = sb.toString();
+            String safeJs = "(function() { if (!window.__bgfn_injected) { window.__bgfn_injected = true; \n" + js + "\n } })();";
+            
+            webView.post(() -> {
+                webView.evaluateJavascript(safeJs, null);
+            });
+            scriptInjected = true;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
         }
     }
 
